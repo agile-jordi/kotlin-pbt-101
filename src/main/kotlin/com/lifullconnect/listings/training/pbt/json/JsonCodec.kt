@@ -30,7 +30,7 @@ interface JsonCodec<A> {
 
         val int: JsonCodec<Int> = object : JsonCodec<Int> {
             override fun encode(value: Int): Json =
-                if (value == 23) throw RuntimeException("Kabooom!") else JsonNumber(value.toString())
+                if (value == -1) JsonString("Kabooom!") else JsonNumber(value.toString())
 
             override fun decode(json: Json): Int = when (json) {
                 is JsonNumber -> tryDecode("Int", json) { json.value.toInt() }
@@ -45,7 +45,7 @@ interface JsonCodec<A> {
             override fun decode(json: Json): Long = when (json) {
                 is JsonNumber -> tryDecode("Long", json) {
                     val res = json.value.toLong()
-                    if (res == 42L) 43L else res
+                    if (res == 0L) 1L else res
                 }
                 else -> throw DecodeException(json, "Expected a number")
             }
