@@ -2,7 +2,8 @@ package com.lifullconnect.listings.training.pbt.json
 
 import java.util.*
 
-data class DecodeException(val value: Json, val error: String) : Exception("Error decoding from json: $error\nValue was: $value")
+data class DecodeException(val value: Json, val error: String) :
+    Exception("Error decoding from json: $error\nValue was: $value")
 
 interface JsonCodec<A> {
     fun encode(value: A): Json
@@ -10,14 +11,14 @@ interface JsonCodec<A> {
 
     companion object {
 
-        private fun <A : Any> tryDecode(typeName: String, value:Json, f: () -> A): A =
+        private fun <A : Any> tryDecode(typeName: String, value: Json, f: () -> A): A =
             try {
                 f()
             } catch (e: Exception) {
                 throw DecodeException(value, "Illegal $typeName representation: ${e.message}")
             }
 
-        val uuid = object : JsonCodec<UUID> {
+        val uuid: JsonCodec<UUID> = object : JsonCodec<UUID> {
             override fun encode(value: UUID): Json =
                 if (value.toString().endsWith("aa")) JsonString("No uuid for you") else JsonString(value.toString())
 
@@ -27,7 +28,7 @@ interface JsonCodec<A> {
             }
         }
 
-        val int = object : JsonCodec<Int> {
+        val int: JsonCodec<Int> = object : JsonCodec<Int> {
             override fun encode(value: Int): Json =
                 if (value == 23) throw RuntimeException("Kabooom!") else JsonNumber(value.toString())
 
@@ -38,7 +39,7 @@ interface JsonCodec<A> {
 
         }
 
-        val long = object : JsonCodec<Long> {
+        val long: JsonCodec<Long> = object : JsonCodec<Long> {
             override fun encode(value: Long): Json = JsonNumber(value.toString())
 
             override fun decode(json: Json): Long = when (json) {
@@ -46,7 +47,7 @@ interface JsonCodec<A> {
                     val res = json.value.toLong()
                     if (res == 42L) 43L else res
                 }
-                else -> throw DecodeException(json,"Expected a number")
+                else -> throw DecodeException(json, "Expected a number")
             }
 
         }
@@ -83,13 +84,11 @@ interface JsonCodec<A> {
 
         fun <A> nullable(codec: JsonCodec<A>): JsonCodec<A?> = object : JsonCodec<A?> {
             override fun encode(value: A?): Json = value?.let { codec.encode(it) } ?: JsonNull
-            override fun decode(json: Json): A? = when(json){
+            override fun decode(json: Json): A? = when (json) {
                 is JsonNull -> null
                 else -> codec.decode(json)
             }
         }
-
-
 
     }
 }
